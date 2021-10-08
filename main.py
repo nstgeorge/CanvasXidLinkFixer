@@ -3,6 +3,7 @@ import time
 
 from selenium import webdriver
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import NoSuchElementException, TimeoutException,\
@@ -46,10 +47,10 @@ def replace_xid_in_tinymce(driver, tinymce):
 
         def after_course_images(driver):
             ui.WebDriverWait(driver, 10).until(
-                lambda driver: driver.find_element_by_css_selector("div[title='Course Images']")).click()
+                lambda driver: driver.find_element(By.CSS_SELECTOR, "div[title='Course Images']")).click()
 
             wait = ui.WebDriverWait(driver, 10)
-            search = wait.until(lambda driver: driver.find_element_by_css_selector("input[placeholder='Search']"))
+            search = wait.until(lambda driver: driver.find_element(By.CSS_SELECTOR, "input[placeholder='Search']"))
             search.send_keys(image_name)
 
             time.sleep(1)  # Wait 1 second for image results to update
@@ -61,9 +62,9 @@ def replace_xid_in_tinymce(driver, tinymce):
                 print("Failed to find image {}. Skipping.".format(image_name))
                 return
             else:
-                for result in results.find_elements_by_tag_name("button"):
+                for result in results.find_elements(By.TAG_NAME, "button"):
                     try:
-                        if image_name in result.find_element_by_tag_name("img").get_attribute("alt"):
+                        if image_name in result.find_element(By.TAG_NAME, "img").get_attribute("alt"):
                             result.click()
                             break
                     except NoSuchElementException as e:
@@ -83,7 +84,7 @@ def replace_xid_in_tinymce(driver, tinymce):
 
 def wait_for_search_results(driver):
     """Wait for image search results to appear."""
-    container = driver.find_element_by_css_selector("div[data-testid='instructure_links-ImagesPanel']").find_element_by_css_selector("span")
+    container = driver.find_element(By.CSS_SELECTOR, "div[data-testid='instructure_links-ImagesPanel']").find_element(By.CSS_SELECTOR, "span")
     if exists_css_selector(container, "div"):
         return container
     return False
@@ -94,7 +95,7 @@ def open_course_images_in_rte(driver, callback):
     ActionChains(driver).key_down(Keys.CONTROL).key_down(Keys.SHIFT)\
         .send_keys("f")\
         .key_up(Keys.CONTROL).key_up(Keys.SHIFT).perform()                                                      # Enter fullscreen
-    ui.WebDriverWait(driver, 10).until(lambda driver: driver.find_elements_by_class_name("tox-fullscreen"))
+    ui.WebDriverWait(driver, 10).until(lambda driver: driver.find_element(By.CLASS_NAME, "tox-fullscreen"))
     ActionChains(driver).key_down(Keys.ALT).send_keys(Keys.F10).key_up(Keys.ALT).perform()                      # Focus on toolbar
     ActionChains(driver).send_keys(Keys.TAB, Keys.TAB, Keys.ARROW_RIGHT).perform()                              # Go to Images
     ActionChains(driver).key_down(Keys.SHIFT).send_keys(Keys.ENTER).key_up(Keys.SHIFT).perform()                # Open dropdown
@@ -105,17 +106,17 @@ def open_course_images_in_rte(driver, callback):
 def go_to_course_link_validator(driver, wait=None):
     """Navigate to course link validation page"""
     if wait is not None:
-        settings_link = wait.until(lambda driver: driver.find_element_by_link_text("Settings"))
+        settings_link = wait.until(lambda driver: driver.find_element(By.LINK_TEXT, "Settings"))
     else:
-        settings_link = driver.find_element_by_partial_link_text("Settings")
+        settings_link = driver.find_element(By.PARTIAL_LINK_TEXT, "Settings")
     settings_link.click()
-    driver.find_element_by_partial_link_text("Validate Links in Content").click()
+    driver.find_element(By.PARTIAL_LINK_TEXT, "Validate Links in Content").click()
 
 
 def exists_css_selector(driver, selector):
     """Return true if the given css selector exists on the page, false otherwise."""
     try:
-        driver.find_element_by_css_selector(selector)
+        driver.find_element(By.CSS_SELECTOR, selector)
     except NoSuchElementException:
         return False
     return True
@@ -152,13 +153,13 @@ def hover_and_click(driver, hover_element, click_element):
 
 def find_elements_by_text(driver, text):
     """Helper function that returns any elements that contain the given text."""
-    return driver.find_elements_by_xpath(".//*[contains(text(), '{}')]".format(text))
+    return driver.find_elements(By.XPATH, ".//*[contains(text(), '{}')]".format(text))
 
 
 def handle_assessment_question_pool(driver, start_index=0):
     """Handle an assessment question with one or more broken xid links.
     Note that assessment question links actually navigate to question pools and not individual questions."""
-    questions = [q for q in ui.WebDriverWait(driver, 10).until(lambda driver: driver.find_elements_by_class_name("question_holder")) if "display: none" not in q.get_attribute("style")]
+    questions = [q for q in ui.WebDriverWait(driver, 10).until(lambda driver: driver.find_elements(By.CLASS_NAME, "question_holder")) if "display: none" not in q.get_attribute("style")]
     print("Questions: {}".format(len(questions)))
 
     driver.execute_script("window.scrollTo(0,0)")
@@ -171,7 +172,7 @@ def handle_assessment_question_pool(driver, start_index=0):
         attempts = 0
         while not hovered and attempts < 500:
             try:
-                hover_and_click(driver, question, question.find_element_by_css_selector("a[class*=edit_question_link]"))
+                hover_and_click(driver, question, question.find_element(By.CSS_SELECTOR, "a[class*=edit_question_link]"))
                 hovered = True
             except (MoveTargetOutOfBoundsException, ElementNotInteractableException, NoSuchElementException):
                 attempts += 1
@@ -183,7 +184,7 @@ def handle_assessment_question_pool(driver, start_index=0):
         # Try to fix the question text
         wait = ui.WebDriverWait(driver, 30)
         try:
-            editors = wait.until(lambda driver: driver.find_elements_by_class_name("tox-edit-area__iframe"))
+            editors = wait.until(lambda driver: driver.find_elements(By.CLASS_NAME, "tox-edit-area__iframe"))
         except TimeoutException:
             print("Unable to find editor for this question.")
             continue
@@ -201,17 +202,17 @@ def handle_assessment_question_pool(driver, start_index=0):
         print("Done replacing, checking answers")
 
         # Find broken links in answers
-        for answer in driver.find_element_by_class_name("form_answers").find_elements_by_class_name("answer"):
-            if any("xid" in i.get_attribute("src") for i in answer.find_elements_by_tag_name("img")):
+        for answer in driver.find_element(By.CLASS_NAME, "form_answers").find_elements(By.CLASS_NAME, "answer"):
+            if any("xid" in i.get_attribute("src") for i in answer.find_elements(By.TAG_NAME, "img")):
                 mark_correct = "correct_answer" in answer.get_attribute("class")
                 ui.WebDriverWait(driver, 5).until((EC.visibility_of(answer)))
                 # driver.execute_script("arguments[0].scrollIntoView();", answer.find_element_by_class_name("question_actions"))
                 driver.execute_script("arguments[0].setAttribute('class', 'answer hover')", answer)
                 try:
                     ui.WebDriverWait(driver, 5).until(
-                        lambda answer: answer.find_element_by_css_selector("a[class='edit_html']")).click()
+                        lambda answer: answer.find_element(By.CSS_SELECTOR, "a[class='edit_html']")).click()
                     tinymce = ui.WebDriverWait(answer, 30).until(
-                        lambda driver: driver.find_element_by_class_name("tox-edit-area__iframe")
+                        lambda driver: driver.find_element(By.CLASS_NAME, "tox-edit-area__iframe")
                     )
                 except (ElementNotInteractableException, TimeoutException) as e:
                     print("Failed to click on the answer. Skipping for now.")
@@ -221,27 +222,27 @@ def handle_assessment_question_pool(driver, start_index=0):
                     # We aren't changing which answer is correct (just re-pressing the button, so it's okay to skip regrading.
                     # Still, might be good to let the professor know.
                     print("Element has been covered. Attempting to clear screen.")
-                    widget = driver.find_element_by_class_name("ui-widget")
+                    widget = driver.find_element(By.CLASS_NAME, "ui-widget")
                     ui.WebDriverWait(widget, 5).until(
                         lambda driver: find_elements_by_text(driver, "Update question without regrading")[0]).click()
                     find_elements_by_text(widget, "Update")[0].click()
                     ui.WebDriverWait(driver, 5).until(
-                        lambda answer: answer.find_element_by_css_selector("a[class='edit_html']")).click()
+                        lambda answer: answer.find_element(By.CSS_SELECTOR, "a[class='edit_html']")).click()
                     tinymce = ui.WebDriverWait(answer, 30).until(
-                        lambda driver: driver.find_element_by_class_name("tox-edit-area__iframe")
+                        lambda driver: driver.find_element(By.CLASS_NAME, "tox-edit-area__iframe")
                     )
                     continue
                 # hover_and_click(driver, answer, ui.WebDriverWait(driver, 5).until(lambda answer: answer.find_element_by_css_selector("a[class='edit_html']")))
                 replace_xid_in_tinymce(driver, tinymce)
                 if mark_correct:
-                    answer.find_element_by_class_name("select_answer_link").click()
+                    answer.find_element(By.CLASS_NAME, "select_answer_link").click()
 
         print("Submitting")
-        driver.find_element_by_css_selector("button[type=submit]").click()
+        driver.find_element(By.CSS_SELECTOR, "button[type=submit]").click()
 
         # Check for errors
         try:
-            ui.WebDriverWait(driver, 2).until(lambda driver: driver.find_element_by_class_name("errorBox"))
+            ui.WebDriverWait(driver, 2).until(lambda driver: driver.find_element(By.CLASS_NAME, "errorBox"))
         except (TimeoutException, NoSuchElementException):
             pass
         else:
@@ -250,22 +251,35 @@ def handle_assessment_question_pool(driver, start_index=0):
 
 def handle_quiz_question(driver):
     """Handle a quiz question. Most of the flow is shared with assessment question pools."""
-    ui.WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_class_name("edit_assignment_link")).click()
-    driver.find_element_by_link_text("Questions").click()
+    ui.WebDriverWait(driver, 10).until(lambda driver: driver.find_element(By.CLASS_NAME, "edit_assignment_link")).click()
+    driver.find_element(By.LINK_TEXT, "Questions").click()
     handle_assessment_question_pool(driver)
 
 
 def handle_page(driver):
     """Handle a page with an xid link."""
     try:
-        ui.WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_class_name("edit-wiki")).click()
+        ui.WebDriverWait(driver, 10).until(lambda driver: driver.find_element(By.CLASS_NAME, "edit-wiki")).click()
         tinymce = ui.WebDriverWait(driver, 10).until(
-            lambda driver: driver.find_element_by_class_name("tox-edit-area__iframe")
+            lambda driver: driver.find_element(By.CLASS_NAME, "tox-edit-area__iframe")
         )
         replace_xid_in_tinymce(driver, tinymce)
-        driver.find_element_by_css_selector("button[class*=submit]").click()
+        driver.find_element(By.CSS_SELECTOR, "button[class*=submit]").click()
     except Exception:
         print("Unable to fix this page.")
+
+
+def handle_discussion(driver):
+    """Handle a discussion topic with an xid link. Very similar to page handling."""
+    try:
+        ui.WebDriverWait(driver, 10).until(lambda driver: driver.find_element(By.CLASS_NAME, "edit-btn")).click()
+        tinymce = ui.WebDriverWait(driver, 10).until(
+            lambda driver: driver.find_element(By.CLASS_NAME, "tox-edit-area__iframe")
+        )
+        replace_xid_in_tinymce(driver, tinymce)
+        driver.find_element(By.CSS_SELECTOR, "button[class*=submit]").click()
+    except Exception:
+        print("Unable to fix this discussion.")
 
 
 if __name__ == "__main__":
@@ -293,25 +307,25 @@ if __name__ == "__main__":
             driver.get(get_course_link(course) if course.isnumeric() else course)
 
             if "Log In" in driver.title:
-                print("Please log into your Boise State account to access this course. In {} seconds, this request will "
-                      "time out.".format(LOGIN_TIMEOUT))
+                print("Please log into your Boise State account to access this course. In {} seconds, this request will"
+                      " time out.".format(LOGIN_TIMEOUT))
                 wait = ui.WebDriverWait(driver, LOGIN_TIMEOUT)
             go_to_course_link_validator(driver, wait)
 
             # Find results
-            results = driver.find_elements_by_class_name("result")
+            results = driver.find_elements(By.CLASS_NAME, "result")
             if len(results) == 0 or args.refresh:
                 print("Refreshing broken links. This request will time out in 10 minutes.")
                 wait_links = ui.WebDriverWait(driver, REFRESH_TIMEOUT)
                 try:
-                    driver.find_element_by_partial_link_text("Link Validation").click()
+                    driver.find_element(By.PARTIAL_LINK_TEXT, "Link Validation").click()
                 except NoSuchElementException:
                     print("Unable to refresh link validation: element not found")
 
-                results = wait_links.until(lambda driver: driver.find_elements_by_class_name("result"))
+                results = wait_links.until(lambda driver: driver.find_elements(By.CLASS_NAME, "result"))
 
             # Filter results to only those with "xid" in the link
-            xid_items = [r for r in results if len(r.find_elements_by_partial_link_text("xid")) != 0]
+            xid_items = [r for r in results if len(r.find_elements(By.PARTIAL_LINK_TEXT, "xid")) != 0]
 
             print("{} xid items found. Beginning fixes...".format(len(xid_items)))
 
@@ -325,7 +339,7 @@ if __name__ == "__main__":
             for item in xid_items:
                 handle_count = len(driver.window_handles)
 
-                url = item.find_element_by_tag_name("h2").find_element_by_tag_name("a").get_attribute("href")
+                url = item.find_element(By.TAG_NAME, "h2").find_element(By.TAG_NAME, "a").get_attribute("href")
                 url = url.split("#")[0]
                 if url in fixed_banks:
                     print("This question has already been fixed because it belongs to the same bank as a previous question.")
@@ -334,25 +348,42 @@ if __name__ == "__main__":
                 print(url)
                 fixed_banks.append(url)
 
-                driver.execute_script("window.open('{}', '_blank')".format(url))
+                # driver.execute_script("window.open('{}', '_blank')".format(url))
 
                 # Wait until the new tab is open
                 wait = ui.WebDriverWait(driver, 10)
-                wait.until(lambda driver: len(driver.window_handles) != handle_count)
 
                 # Handle different types of pages
                 if len(find_elements_by_text(item, "Assessment Question")) != 0:
                     # print(len(find_elements_by_text(item, "Assessment Question")))
-                    driver.switch_to.window(driver.window_handles[1])
+                    # driver.switch_to.window(driver.window_handles[1])
+                    driver.switch_to.new_window("tab")
+                    wait.until(lambda driver: len(driver.window_handles) != handle_count)
+                    driver.get(url)
                     handle_assessment_question_pool(driver)
                 elif len(find_elements_by_text(item, "Quiz Question")) != 0:
-                    driver.switch_to.window(driver.window_handles[1])
+                    # driver.switch_to.window(driver.window_handles[1])
+                    driver.switch_to.new_window("tab")
+                    wait.until(lambda driver: len(driver.window_handles) != handle_count)
+                    driver.get(url)
                     handle_quiz_question(driver)
                 elif len(find_elements_by_text(item, "Page")) != 0 or len(find_elements_by_text(item, "Assignment")) != 0:
-                    driver.switch_to.window(driver.window_handles[1])
+                    # driver.switch_to.window(driver.window_handles[1])
+                    driver.switch_to.new_window("tab")
+                    wait.until(lambda driver: len(driver.window_handles) != handle_count)
+                    driver.get(url)
                     handle_page(driver)
+                elif len(find_elements_by_text(item, "Discussion")) != 0:
+                    # driver.switch_to.window(driver.window_handles[1])
+                    driver.switch_to.new_window("tab")
+                    wait.until(lambda driver: len(driver.window_handles) != handle_count)
+                    driver.get(url)
+                    handle_discussion(driver)
                 else:
-                    pass
+                    print("Unrecognized page type!")
+                    # open a new window so we don't close the main window.
+                    driver.switch_to.new_window("tab")
+                    wait.until(lambda driver: len(driver.window_handles) != handle_count)
 
                 driver.close()
                 driver.switch_to.window(main_window)
