@@ -1,5 +1,6 @@
 import contextlib
 import time
+from sys import platform
 
 from selenium import webdriver
 from selenium.webdriver.support import expected_conditions as EC
@@ -92,11 +93,12 @@ def wait_for_search_results(driver):
 
 def open_course_images_in_rte(driver, callback):
     """Perform a string of key actions that will open the Course Images button in tinyMCE."""
-    ActionChains(driver).key_down(Keys.CONTROL).key_down(Keys.SHIFT)\
-        .send_keys("f")\
-        .key_up(Keys.CONTROL).key_up(Keys.SHIFT).perform()                                                      # Enter fullscreen
+    command_key = Keys.COMMAND if platform == "darwin" else Keys.CONTROL
+    ActionChains(driver).key_down(command_key).key_down(Keys.SHIFT) \
+        .send_keys("f") \
+        .key_up(command_key).key_up(Keys.SHIFT).perform()  # Enter fullscreen
     ui.WebDriverWait(driver, 10).until(lambda driver: driver.find_element(By.CLASS_NAME, "tox-fullscreen"))
-    ActionChains(driver).key_down(Keys.ALT).send_keys(Keys.F10).key_up(Keys.ALT).perform()                      # Focus on toolbar
+    ActionChains(driver).key_down(Keys.ALT).send_keys(Keys.F10).key_up(Keys.ALT).perform()  # Focus on toolbar
     ActionChains(driver).send_keys(Keys.TAB, Keys.TAB, Keys.ARROW_RIGHT).perform()                              # Go to Images
     ActionChains(driver).key_down(Keys.SHIFT).send_keys(Keys.ENTER).key_up(Keys.SHIFT).perform()                # Open dropdown
     callback(driver)                                                                                            # Run callback
