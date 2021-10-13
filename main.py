@@ -311,7 +311,7 @@ if __name__ == "__main__":
             if "Log In" in driver.title:
                 print("Please log into your Boise State account to access this course. In {} seconds, this request will"
                       " time out.".format(LOGIN_TIMEOUT))
-                wait = ui.WebDriverWait(driver, LOGIN_TIMEOUT)
+            wait = ui.WebDriverWait(driver, LOGIN_TIMEOUT)
             go_to_course_link_validator(driver, wait)
 
             # Find results
@@ -340,55 +340,59 @@ if __name__ == "__main__":
             # if the class names are nondeterministic, which seems likely.
             for item in xid_items:
                 handle_count = len(driver.window_handles)
-
-                url = item.find_element(By.TAG_NAME, "h2").find_element(By.TAG_NAME, "a").get_attribute("href")
-                url = url.split("#")[0]
-                if url in fixed_banks:
-                    print("This question has already been fixed because it belongs to the same bank as a previous question.")
-                    continue
-
-                print(url)
-                fixed_banks.append(url)
+                try:
+                    url = item.find_element(By.TAG_NAME, "h2").find_element(By.TAG_NAME, "a").get_attribute("href")
+                    url = url.split("#")[0]
+                    if url in fixed_banks:
+                        print("This question has already been fixed because it belongs to the same bank as a previous question.")
+                        continue
+                    print(url)
+                    fixed_banks.append(url)
+                except Exception:
+                    print("Unable to check this item against previously fixed banks. Attempting to fix.")
 
                 # driver.execute_script("window.open('{}', '_blank')".format(url))
 
-                # Wait until the new tab is open
-                wait = ui.WebDriverWait(driver, 10)
+                try:
+                    # Wait until the new tab is open
+                    wait = ui.WebDriverWait(driver, 10)
 
-                # Handle different types of pages
-                if len(find_elements_by_text(item, "Assessment Question")) != 0:
-                    # print(len(find_elements_by_text(item, "Assessment Question")))
-                    # driver.switch_to.window(driver.window_handles[1])
-                    driver.switch_to.new_window("tab")
-                    wait.until(lambda driver: len(driver.window_handles) != handle_count)
-                    driver.get(url)
-                    handle_assessment_question_pool(driver)
-                elif len(find_elements_by_text(item, "Quiz Question")) != 0:
-                    # driver.switch_to.window(driver.window_handles[1])
-                    driver.switch_to.new_window("tab")
-                    wait.until(lambda driver: len(driver.window_handles) != handle_count)
-                    driver.get(url)
-                    handle_quiz_question(driver)
-                elif len(find_elements_by_text(item, "Page")) != 0 or len(find_elements_by_text(item, "Assignment")) != 0:
-                    # driver.switch_to.window(driver.window_handles[1])
-                    driver.switch_to.new_window("tab")
-                    wait.until(lambda driver: len(driver.window_handles) != handle_count)
-                    driver.get(url)
-                    handle_page(driver)
-                elif len(find_elements_by_text(item, "Discussion")) != 0:
-                    # driver.switch_to.window(driver.window_handles[1])
-                    driver.switch_to.new_window("tab")
-                    wait.until(lambda driver: len(driver.window_handles) != handle_count)
-                    driver.get(url)
-                    handle_discussion(driver)
-                else:
-                    print("Unrecognized page type!")
-                    # open a new window so we don't close the main window.
-                    driver.switch_to.new_window("tab")
-                    wait.until(lambda driver: len(driver.window_handles) != handle_count)
+                    # Handle different types of pages
+                    if len(find_elements_by_text(item, "Assessment Question")) != 0:
+                        # print(len(find_elements_by_text(item, "Assessment Question")))
+                        # driver.switch_to.window(driver.window_handles[1])
+                        driver.switch_to.new_window("tab")
+                        wait.until(lambda driver: len(driver.window_handles) != handle_count)
+                        driver.get(url)
+                        handle_assessment_question_pool(driver)
+                    elif len(find_elements_by_text(item, "Quiz Question")) != 0:
+                        # driver.switch_to.window(driver.window_handles[1])
+                        driver.switch_to.new_window("tab")
+                        wait.until(lambda driver: len(driver.window_handles) != handle_count)
+                        driver.get(url)
+                        handle_quiz_question(driver)
+                    elif len(find_elements_by_text(item, "Page")) != 0 or len(find_elements_by_text(item, "Assignment")) != 0:
+                        # driver.switch_to.window(driver.window_handles[1])
+                        driver.switch_to.new_window("tab")
+                        wait.until(lambda driver: len(driver.window_handles) != handle_count)
+                        driver.get(url)
+                        handle_page(driver)
+                    elif len(find_elements_by_text(item, "Discussion")) != 0:
+                        # driver.switch_to.window(driver.window_handles[1])
+                        driver.switch_to.new_window("tab")
+                        wait.until(lambda driver: len(driver.window_handles) != handle_count)
+                        driver.get(url)
+                        handle_discussion(driver)
+                    else:
+                        print("Unrecognized page type!")
+                        # open a new window so we don't close the main window.
+                        driver.switch_to.new_window("tab")
+                        wait.until(lambda driver: len(driver.window_handles) != handle_count)
 
-                driver.close()
-                driver.switch_to.window(main_window)
+                    driver.close()
+                    driver.switch_to.window(main_window)
+                except Exception as e:
+                    print("Unexpected error occurred in this item. Skipping. \n   - Message: " + str(e))
             print("Course complete.")
 
         print("Done.")
