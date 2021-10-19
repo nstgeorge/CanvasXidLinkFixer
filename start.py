@@ -65,7 +65,7 @@ def run_fix():
                     alert.error("Failed to log into your Boise State account. Please log out "
                                 "and re-enter your information.")
                 if err == "login_not_interactable":
-                    alert.err("Unable to interact with login page. This is usually fixed with a rerun.")
+                    alert.error("Unable to interact with login page. This is usually fixed with a rerun.")
                 else:
                     alert.error("An unknown error occurred. Code: {}. Stopping.".format(err))
                 break
