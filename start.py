@@ -43,6 +43,8 @@ def draw_sidebar():
 def run_fix():
     start_time = time.time()
     options = Options()
+    options.add_argument("--window-size=1920,1080")
+    options.add_argument("--start-maximized")
     options.headless = True
     browser = webdriver.Chrome(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install(), options=options)
     progress_container = btn_container.container()
