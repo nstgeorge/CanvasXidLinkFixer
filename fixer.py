@@ -316,16 +316,19 @@ class XIDFixer:
         self.__driver.get(get_course_link(course) if course.isnumeric() else course)
 
         if "Log In" in self.__driver.title:
-            self.__driver.find_element(By.XPATH,
-                                       ".//img[contains(@alt, 'Boise State Logo')]/following-sibling::ion-button")\
-                .click()
+            try:
+                self.__driver.find_element(By.XPATH,
+                                           ".//img[contains(@alt, 'Boise State Logo')]/following-sibling::ion-button")\
+                    .click()
 
-            username_input = ui.WebDriverWait(self.__driver, 10).until(
-                lambda d: d.find_element(By.ID, "userNameInput")
-            )
-            username_input.send_keys(username)
-            self.__driver.find_element(By.ID, "passwordInput").send_keys(password)
-            self.__driver.find_element(By.ID, "submitButton").click()
+                username_input = ui.WebDriverWait(self.__driver, 10).until(
+                    lambda d: d.find_element(By.ID, "userNameInput")
+                )
+                username_input.send_keys(username)
+                self.__driver.find_element(By.ID, "passwordInput").send_keys(password)
+                self.__driver.find_element(By.ID, "submitButton").click()
+            except ElementNotInteractableException:
+                return 0, 0, "login_not_interactable"
 
             login_fail = ui.WebDriverWait(self.__driver, 5).until(lambda d: exists_css_selector(d, ".login_error"))
             if login_fail:
