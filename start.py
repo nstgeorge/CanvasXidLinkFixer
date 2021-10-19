@@ -6,6 +6,7 @@ from selenium import webdriver
 import streamlit as st
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.utils import ChromeType
+from selenium.webdriver.chrome.options import Options
 
 from fixer import XIDFixer
 
@@ -41,7 +42,9 @@ def draw_sidebar():
 
 def run_fix():
     start_time = time.time()
-    browser = webdriver.Chrome(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install())
+    options = Options()
+    options.headless = True
+    browser = webdriver.Chrome(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install(), options=options)
     progress_container = btn_container.container()
     progress = progress_container.empty()
     status = progress_container.empty()
