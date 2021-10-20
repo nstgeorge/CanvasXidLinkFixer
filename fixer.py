@@ -322,7 +322,7 @@ class XIDFixer:
                     .click()
 
                 username_input = ui.WebDriverWait(self.__driver, 10).until(
-                    lambda d: d.find_element(By.ID, "userNameInput")
+                        EC.element_to_be_clickable((By.ID, "userNameInput"))
                 )
                 username_input.send_keys(username)
                 self.__driver.find_element(By.ID, "passwordInput").send_keys(password)
