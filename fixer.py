@@ -417,4 +417,4 @@ class XIDFixer:
             except Exception:
                 failed_items += 1
 
-        return failed_items, len(xid_items)
+        return failed_items, len(xid_items), None
