@@ -46,6 +46,7 @@ def run_fix():
     options = Options()
     options.add_argument("--window-size=1920,1080")
     options.add_argument("--start-maximized")
+    options.add_argument('--no-sandbox')
     options.headless = True
     service = Service(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install())
     browser = webdriver.Chrome(service=service, options=options)
