@@ -4,6 +4,7 @@ import datetime
 
 from selenium import webdriver
 import streamlit as st
+from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.utils import ChromeType
 from selenium.webdriver.chrome.options import Options
@@ -46,7 +47,8 @@ def run_fix():
     options.add_argument("--window-size=1920,1080")
     options.add_argument("--start-maximized")
     options.headless = True
-    browser = webdriver.Chrome(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install(), options=options)
+    service = Service(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install())
+    browser = webdriver.Chrome(service=service, options=options)
     progress_container = btn_container.container()
     progress = progress_container.empty()
     status = progress_container.empty()
