@@ -85,8 +85,6 @@ def run_fix():
             int((total_attempted - total_failed) / total_attempted),
             datetime.timedelta(seconds=time.time() - start_time)
         ))
-    else:
-        err = None
 
     time.sleep(3)
     if btn_container.button("Rerun"):
@@ -125,7 +123,7 @@ if __name__ == "__main__":
                        "Each course must be separated by whitespace (either space or each on their own line), "
                        "do not use commas.")
             courses = st.text_area("Courses")
-            submitted = st.form_submit_button("Start Fixing")
+            submitted = st.form_submit_button("Continue")
 
             if submitted:
                 st.session_state.courses = courses.split()
