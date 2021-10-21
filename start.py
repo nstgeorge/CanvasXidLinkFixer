@@ -85,6 +85,8 @@ def run_fix():
             int((total_attempted - total_failed) / total_attempted),
             datetime.timedelta(seconds=time.time() - start_time)
         ))
+    else:
+        err = None
 
     time.sleep(3)
     if btn_container.button("Rerun"):
