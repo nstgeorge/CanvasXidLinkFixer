@@ -1,2 +1,2 @@
-chromium=94.0.4606.81
+chromium-browser
 chromium-driver
