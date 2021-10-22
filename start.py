@@ -7,7 +7,6 @@ from selenium import webdriver
 import streamlit as st
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
-from webdriver_manager.utils import ChromeType
 from selenium.webdriver.chrome.options import Options
 
 from fixer import XIDFixer
@@ -76,7 +75,7 @@ def run_fix():
                 if err == "login_fail":
                     alert.error("Failed to log into your Boise State account. Please log out "
                                 "and re-enter your information.")
-                if err == "login_not_interactable":
+                elif err == "login_not_interactable":
                     alert.error("Unable to interact with login page. This is usually fixed with a rerun.")
                 else:
                     alert.error("An unknown error occurred. Code: {}. Stopping.".format(err))
