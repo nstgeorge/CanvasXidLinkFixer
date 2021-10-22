@@ -1,16 +1,18 @@
 import contextlib
 import time
 import datetime
+import os
 
 from selenium import webdriver
 import streamlit as st
 from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.utils import ChromeType
 from selenium.webdriver.chrome.options import Options
 
 from fixer import XIDFixer
 
-GOOGLE_CHROME_PATH = '/app/.apt/usr/bin/google_chrome'
-CHROMEDRIVER_PATH = '/app/.chromedriver/bin/chromedriver'
+GOOGLE_CHROME_PATH = os.environ.get('GOOGLE_CHROME_BIN', "/app/.apt/usr/bin/google_chrome")
 
 ##
 #
@@ -51,7 +53,7 @@ def run_fix():
     options.add_argument('--disable-gpu')
     options.binary_location = GOOGLE_CHROME_PATH
     options.headless = True
-    service = Service(CHROMEDRIVER_PATH)
+    service = Service(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install())
     browser = webdriver.Chrome(service=service, options=options)
     progress_container = btn_container.container()
     progress = progress_container.empty()
