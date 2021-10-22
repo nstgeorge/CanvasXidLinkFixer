@@ -5,11 +5,12 @@ import datetime
 from selenium import webdriver
 import streamlit as st
 from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
-from webdriver_manager.utils import ChromeType
 from selenium.webdriver.chrome.options import Options
 
 from fixer import XIDFixer
+
+GOOGLE_CHROME_PATH = '/app/.apt/usr/bin/google_chrome'
+CHROMEDRIVER_PATH = '/app/.chromedriver/bin/chromedriver'
 
 ##
 #
@@ -47,8 +48,10 @@ def run_fix():
     options.add_argument("--window-size=1920,1080")
     options.add_argument("--start-maximized")
     options.add_argument('--no-sandbox')
+    options.add_argument('--disable-gpu')
+    options.binary_location = GOOGLE_CHROME_PATH
     options.headless = True
-    service = Service(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install())
+    service = Service(CHROMEDRIVER_PATH)
     browser = webdriver.Chrome(service=service, options=options)
     progress_container = btn_container.container()
     progress = progress_container.empty()
