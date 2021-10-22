@@ -53,7 +53,7 @@ def run_fix():
     options.add_argument('--disable-gpu')
     options.binary_location = GOOGLE_CHROME_PATH
     options.headless = True
-    service = Service(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install())
+    service = Service(ChromeDriverManager().install())
     browser = webdriver.Chrome(service=service, options=options)
     progress_container = btn_container.container()
     progress = progress_container.empty()
