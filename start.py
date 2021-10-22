@@ -51,6 +51,7 @@ def run_fix():
     options.add_argument("--start-maximized")
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-gpu')
+    options.add_argument('--disable-dev-shm-usage')
     options.binary_location = GOOGLE_CHROME_PATH
     options.headless = True
     service = Service(ChromeDriverManager().install())
