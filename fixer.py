@@ -331,7 +331,7 @@ class XIDFixer:
                 return 0, 0, "login_not_interactable"
 
             login_fail = ui.WebDriverWait(self.__driver, 5).until(lambda d: exists_css_selector(d, ".login_error"))
-            print(self.__driver.get_element(By.TAG_NAME, "body").get_attribute("innerHTML"))
+            print(self.__driver.find_element(By.TAG_NAME, "body").get_attribute("innerHTML"))
             if login_fail:
                 return 0, 0, "login_fail"
 
