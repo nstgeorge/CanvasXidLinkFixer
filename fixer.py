@@ -340,7 +340,6 @@ class XIDFixer:
             except ElementNotInteractableException:
                 return 0, 0, "login_not_interactable"
 
-            print(self.__driver.find_element(By.TAG_NAME, "body").get_attribute("innerHTML"))
             if self.__check_login_fail():
                 return 0, 0, "login_fail"
 

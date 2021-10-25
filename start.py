@@ -85,9 +85,8 @@ def run_fix():
     if not err:
         progress.progress(100)
         status.caption("Done!")
-        alert.success("Fix complete for all courses! {} of {} attempted items were successful ({}%). Time: {}.".format(
+        alert.success("Fix complete for all courses! {} of {} attempted items were successful. Time: {}.".format(
             total_attempted - total_failed, total_attempted,
-            int((total_attempted - total_failed) / total_attempted),
             datetime.timedelta(seconds=time.time() - start_time)
         ))
 
