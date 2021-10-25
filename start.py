@@ -140,7 +140,9 @@ if __name__ == "__main__":
                     "Then, when you're ready, press the **Start** button below. "
                     "Alternatively, you can clear the course list in the sidebar and try again.")
 
-        st.markdown("**Note: You will likely be asked to complete Duo authentication on your device.**")
+        st.markdown("You will likely be asked to complete Duo authentication on your device."
+                    "**Please ensure that your Duo is set to [automatically send push requests.]"
+                    "(https://www.boisestate.edu/oit-myboisestate/customize-your-duo-security-preferences/)**")
 
         btn_container = st.empty()
         col1, col2 = btn_container.columns(2)
