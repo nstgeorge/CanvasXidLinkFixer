@@ -326,10 +326,13 @@ class XIDFixer:
                 )
                 username_input.send_keys(username)
                 self.__driver.find_element(By.ID, "passwordInput").send_keys(password)
-                self.__driver.find_element(By.ID, "submitButton").click()
 
-                print("Username as entered: {}".format(username_input.get_attribute("value")))
-                print("Password as entered: {}".format(self.__driver.find_element(By.ID, "passwordInput").get_attribute("value")))
+                print("Username as entered: {}".format(
+                    self.__driver.find_element(By.ID, "userNameInput").get_attribute("value")))
+                print("Password as entered: {}".format(
+                    self.__driver.find_element(By.ID, "passwordInput").get_attribute("value")))
+
+                self.__driver.find_element(By.ID, "submitButton").click()
 
             except ElementNotInteractableException:
                 return 0, 0, "login_not_interactable"
