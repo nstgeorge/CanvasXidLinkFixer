@@ -176,6 +176,15 @@ class XIDFixer:
         return (element if element else self.__driver).find_elements(By.XPATH,
                                                                      ".//*[contains(text(), '{}')]".format(text))
 
+    def __check_login_fail(self):
+        try:
+            result = ui.WebDriverWait(self.__driver, 5).until(
+                lambda d: exists_css_selector(d, ".toast-message > .login_error")
+            )
+        except TimeoutException:
+            return False
+        return result
+
     def __handle_assessment_question_pool(self, start_index=0):
         """Handle an assessment question with one or more broken xid links.
         Note that assessment question links actually navigate to question pools and not individual questions."""
@@ -327,11 +336,11 @@ class XIDFixer:
                 username_input.send_keys(username)
                 self.__driver.find_element(By.ID, "passwordInput").send_keys(password)
                 self.__driver.find_element(By.ID, "submitButton").click()
+
             except ElementNotInteractableException:
                 return 0, 0, "login_not_interactable"
 
-            login_fail = ui.WebDriverWait(self.__driver, 5).until(lambda d: exists_css_selector(d, ".login_error"))
-            if login_fail:
+            if self.__check_login_fail():
                 return 0, 0, "login_fail"
 
         self.__go_to_course_link_validator()

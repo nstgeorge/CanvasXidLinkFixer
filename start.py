@@ -1,15 +1,17 @@
 import contextlib
 import time
 import datetime
+import os
 
 from selenium import webdriver
 import streamlit as st
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
-from webdriver_manager.utils import ChromeType
 from selenium.webdriver.chrome.options import Options
 
 from fixer import XIDFixer
+
+GOOGLE_CHROME_PATH = os.environ.get('GOOGLE_CHROME_BIN', "/app/.apt/usr/bin/google_chrome")
 
 ##
 #
@@ -47,8 +49,11 @@ def run_fix():
     options.add_argument("--window-size=1920,1080")
     options.add_argument("--start-maximized")
     options.add_argument('--no-sandbox')
+    options.add_argument('--disable-gpu')
+    options.add_argument('--disable-dev-shm-usage')
+    options.binary_location = GOOGLE_CHROME_PATH
     options.headless = True
-    service = Service(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install())
+    service = Service(ChromeDriverManager().install())
     browser = webdriver.Chrome(service=service, options=options)
     progress_container = btn_container.container()
     progress = progress_container.empty()
@@ -65,12 +70,11 @@ def run_fix():
             failed_items, attempted_items, err = xid_fix.do_course(course, st.session_state.username,
                                                               st.session_state.password, revalidate_links)
 
-            st.code(err)
             if err is not None:
                 if err == "login_fail":
                     alert.error("Failed to log into your Boise State account. Please log out "
                                 "and re-enter your information.")
-                if err == "login_not_interactable":
+                elif err == "login_not_interactable":
                     alert.error("Unable to interact with login page. This is usually fixed with a rerun.")
                 else:
                     alert.error("An unknown error occurred. Code: {}. Stopping.".format(err))
@@ -81,9 +85,8 @@ def run_fix():
     if not err:
         progress.progress(100)
         status.caption("Done!")
-        alert.success("Fix complete for all courses! {} of {} attempted items were successful ({}%). Time: {}.".format(
+        alert.success("Fix complete for all courses! {} of {} attempted items were successful. Time: {}.".format(
             total_attempted - total_failed, total_attempted,
-            int((total_attempted - total_failed) / total_attempted),
             datetime.timedelta(seconds=time.time() - start_time)
         ))
 
@@ -137,7 +140,9 @@ if __name__ == "__main__":
                     "Then, when you're ready, press the **Start** button below. "
                     "Alternatively, you can clear the course list in the sidebar and try again.")
 
-        st.markdown("**Note: You will likely be asked to complete Duo authentication on your device.**")
+        st.markdown("You will likely be asked to complete Duo authentication on your device."
+                    "**Please ensure that your Duo is set to [automatically send push requests.]"
+                    "(https://www.boisestate.edu/oit-myboisestate/customize-your-duo-security-preferences/)**")
 
         btn_container = st.empty()
         col1, col2 = btn_container.columns(2)
