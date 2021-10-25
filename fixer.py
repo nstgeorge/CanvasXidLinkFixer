@@ -177,7 +177,13 @@ class XIDFixer:
                                                                      ".//*[contains(text(), '{}')]".format(text))
 
     def __check_login_fail(self):
-        return ui.WebDriverWait(self.__driver, 5).until(lambda d: exists_css_selector(d, ".toast-message > .login_error"))
+        try:
+            result = ui.WebDriverWait(self.__driver, 5).until(
+                lambda d: exists_css_selector(d, ".toast-message > .login_error")
+            )
+        except TimeoutException:
+            return False
+        return result
 
     def __handle_assessment_question_pool(self, start_index=0):
         """Handle an assessment question with one or more broken xid links.
