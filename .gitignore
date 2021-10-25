@@ -2,3 +2,4 @@ venv
 geckodriver.log
 geckodriver.exe
 chromedriver
+.python-version

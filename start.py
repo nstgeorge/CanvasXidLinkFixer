@@ -70,7 +70,6 @@ def run_fix():
             failed_items, attempted_items, err = xid_fix.do_course(course, st.session_state.username,
                                                               st.session_state.password, revalidate_links)
 
-            st.code(err)
             if err is not None:
                 if err == "login_fail":
                     alert.error("Failed to log into your Boise State account. Please log out "
