@@ -376,16 +376,16 @@ class XIDFixer:
 
         # Check for failed login case, return fail reason
         if not login_result:
-            return error
+            return error,
 
-        yield "waiting_for_duo"
+        yield "waiting_for_duo",
         self.__go_to_course_link_validator()
-        yield "duo_success"
+        yield "duo_success",
 
         xid_items = self.__get_xid_items(revalidate_links)
 
         if xid_items == "timeout_fail":
-            return "err_timeout_fail"
+            return "err_timeout_fail",
 
         yield "total_items", len(xid_items)
 
@@ -451,9 +451,9 @@ class XIDFixer:
 
                 self.__driver.close()
                 self.__driver.switch_to.window(main_window)
-                yield "item_success"
+                yield "item_success",
             except Exception:
                 failed_items += 1
                 yield "item_failed", "unknown"
 
-        return failed_items, len(xid_items), None
+        return "done",

@@ -101,6 +101,8 @@ def run_fix():
                 if msg == "item_success":
                     course_status.caption("Last item succeeded")
                     total_attempted += 1
+                if msg == "done":
+                    course_status.caption("Course complete!")
 
                 status.caption("Course {} ({}/{}): {} of {} failed so far, {} total items".format(
                     course,
