@@ -43,6 +43,14 @@ def draw_sidebar():
             st.experimental_rerun()
 
 
+def get_item_fail_message(fail_type):
+    """Returns a detailed fail message for a given fail type."""
+    if fail_type == "already_fixed":
+        return "Item has already been fixed because it's from the same pool as a previous question."
+    else:
+        return "Unknown reason."
+
+
 def run_fix():
     start_time = time.time()
     options = Options()
@@ -58,17 +66,40 @@ def run_fix():
     progress_container = btn_container.container()
     progress = progress_container.empty()
     status = progress_container.empty()
+    course_status = progress_container.empty()
 
     total_failed = 0
     total_attempted = 0
+    total_items = 0
 
     with contextlib.closing(browser) as driver:
         xid_fix = XIDFixer(driver)
         for i, course in enumerate(st.session_state.courses):
-            progress.progress(int(i * (100 / len(st.session_state.courses))))
-            status.caption("Working on {}...".format(course))
-            failed_items, attempted_items, err = xid_fix.do_course(course, st.session_state.username,
-                                                              st.session_state.password, revalidate_links)
+            status.caption("Starting work on {}...".format(course))
+            for msg, arg in xid_fix.do_course(course, st.session_state.username,
+                                                              st.session_state.password, revalidate_links):
+                if total_items != 0:
+                    progress.progress(total_attempted / total_items)
+                if msg.slice("_")[0] == "err":
+                    err = msg
+                if msg == "total_items":
+                    total_items = arg
+                if msg == "item_failed":
+                    total_failed += 1
+                    total_attempted += 1
+                    course_status.caption("Last item failed to fix: {}".format(get_item_fail_message(arg)))
+                if msg == "item_success":
+                    course_status.caption("Last item succeeded")
+                    total_attempted += 1
+
+                status.caption("Course {} ({}/{}): {} of {} failed so far, {} total items".format(
+                    course,
+                    i,
+                    len(st.session_state.courses),
+                    total_failed,
+                    total_attempted,
+                    total_items
+                ))
 
             if err is not None:
                 if err == "login_fail":
@@ -76,12 +107,13 @@ def run_fix():
                                 "and re-enter your information.")
                 elif err == "login_not_interactable":
                     alert.error("Unable to interact with login page. This is usually fixed with a rerun.")
+                elif err == "timeout_fail":
+                    alert.error("The course link validation has taken too long. "
+                                "It is still running, so try rerunning the course.")
                 else:
                     alert.error("An unknown error occurred. Code: {}. Stopping.".format(err))
                 break
-            else:
-                total_failed += failed_items
-                total_attempted += attempted_items
+
     if not err:
         progress.progress(100)
         status.caption("Done!")
@@ -140,7 +172,7 @@ if __name__ == "__main__":
                     "Then, when you're ready, press the **Start** button below. "
                     "Alternatively, you can clear the course list in the sidebar and try again.")
 
-        st.markdown("You will likely be asked to complete Duo authentication on your device."
+        st.markdown("You will likely be asked to complete Duo authentication on your device. "
                     "**Please ensure that your Duo is set to [automatically send push requests.]"
                     "(https://www.boisestate.edu/oit-myboisestate/customize-your-duo-security-preferences/)**")
 

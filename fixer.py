@@ -15,6 +15,7 @@ LOGIN_TIMEOUT = 120
 REFRESH_TIMEOUT = 600
 BASE_URL = "https://boisestatecanvas.instructure.com"
 
+
 ##
 #
 #   This file contains the logic for fixing "xid" links in Canvas courses caused by Blackboard imports.
@@ -309,40 +310,40 @@ class XIDFixer:
 
     def __handle_discussion(self):
         """Handle a discussion topic with an xid link. Very similar to page handling."""
-        ui.WebDriverWait(self.__driver, 10).until(lambda d: self.__driver.find_element(By.CLASS_NAME, "edit-btn")).click()
+        ui.WebDriverWait(self.__driver, 10).until(
+            lambda d: self.__driver.find_element(By.CLASS_NAME, "edit-btn")).click()
         tinymce = ui.WebDriverWait(self.__driver, 10).until(
             lambda d: self.__driver.find_element(By.CLASS_NAME, "tox-edit-area__iframe")
         )
         self.__replace_xid_in_tinymce(tinymce)
         self.__driver.find_element(By.CSS_SELECTOR, "button[class*=submit]").click()
 
-    def do_course(self, course, username, password, revalidate_links=False):
-        """Fix all XID links within the given course. Expects valid Boise State identification.
-        This is the only public function in the class.
-        returns a tuple: `failed_items, attempted_items, err`
-        If an error occurs, `err` will have a very brief description that the UI can expand on.
-        """
+    def __log_in(self, course, username, password):
         self.__driver.get(get_course_link(course) if course.isnumeric() else course)
 
         if "Log In" in self.__driver.title:
             try:
                 self.__driver.find_element(By.XPATH,
-                                           ".//img[contains(@alt, 'Boise State Logo')]/following-sibling::ion-button")\
+                                           ".//img[contains(@alt, 'Boise State Logo')]/following-sibling::ion-button") \
                     .click()
 
                 username_input = ui.WebDriverWait(self.__driver, 10).until(
-                        EC.element_to_be_clickable((By.ID, "userNameInput"))
+                    EC.element_to_be_clickable((By.ID, "userNameInput"))
                 )
                 username_input.send_keys(username)
                 self.__driver.find_element(By.ID, "passwordInput").send_keys(password)
                 self.__driver.find_element(By.ID, "submitButton").click()
 
             except ElementNotInteractableException:
-                return 0, 0, "login_not_interactable"
+                return False, "err_login_not_interactable"
 
             if self.__check_login_fail():
-                return 0, 0, "login_fail"
+                return False, "err_login_fail"
 
+            return True
+
+    def __get_xid_items(self, revalidate_links):
+        """Get the XID items listed for the course currently in the driver."""
         self.__go_to_course_link_validator()
 
         # Find results
@@ -355,10 +356,33 @@ class XIDFixer:
             except NoSuchElementException:
                 print("Unable to refresh link validation: element not found")
 
-            results = wait_links.until(lambda driver: driver.find_elements(By.CLASS_NAME, "result"))
+            try:
+                results = wait_links.until(lambda driver: driver.find_elements(By.CLASS_NAME, "result"))
+            except TimeoutException:
+                return "err_refresh_timeout"
 
         # Filter results to only those with "xid" in the link
-        xid_items = [r for r in results if len(r.find_elements(By.PARTIAL_LINK_TEXT, "xid")) != 0]
+        return [r for r in results if len(r.find_elements(By.PARTIAL_LINK_TEXT, "xid")) != 0]
+
+    def do_course(self, course, username, password, revalidate_links=False):
+        """Fix all XID links within the given course. Expects valid Boise State identification.
+        This is the only public function in the class.
+        returns a tuple: `failed_items, attempted_items, err`
+        If an error occurs, `err` will have a very brief description that the UI can expand on.
+        """
+        login_result = self.__log_in(course, username, password)
+
+        # Check for failed login case, return fail reason
+        if not login_result[0]:
+            return login_result[1]
+
+        self.__go_to_course_link_validator()
+        xid_items = self.__get_xid_items(revalidate_links)
+
+        if xid_items == "timeout_fail":
+            return "err_timeout_fail"
+
+        yield "total_items", len(xid_items)
 
         print("{} xid items found. Beginning fixes...".format(len(xid_items)))
 
@@ -381,8 +405,7 @@ class XIDFixer:
                     continue
                 fixed_banks.append(url)
             except Exception:
-                failed_items += 1
-                continue
+                yield "item_failed", "already_fixed"
             # driver.execute_script("window.open('{}', '_blank')".format(url))
 
             try:
@@ -423,7 +446,9 @@ class XIDFixer:
 
                 self.__driver.close()
                 self.__driver.switch_to.window(main_window)
+                yield "item_success"
             except Exception:
                 failed_items += 1
+                yield "item_failed", "unknown"
 
         return failed_items, len(xid_items), None
