@@ -84,7 +84,7 @@ def run_fix():
                     progress.progress(0)
 
                 # Handle errors
-                if msg.slice("_")[0] == "err":
+                if msg[:3] == "err":
                     err = msg
 
                 if msg == "waiting_for_duo":
