@@ -343,7 +343,7 @@ class XIDFixer:
             if self.__check_login_fail():
                 return False, "err_login_fail"
 
-            return False,
+            return True, None
 
     def __get_xid_items(self, revalidate_links):
         """Get the XID items listed for the course currently in the driver."""

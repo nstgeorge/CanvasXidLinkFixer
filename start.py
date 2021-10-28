@@ -88,7 +88,8 @@ def run_fix():
                     err = msg
 
                 if msg == "waiting_for_duo":
-                    course_status.caption("You should have received a Duo push. Please approve the login request.")
+                    course_status.caption("You should have received a Duo push. Please approve the login request. "
+                                          "Note: The location shown on the push will not be your real location.")
                 if msg == "duo_success":
                     course_status.caption("Duo approved, beginning course fix...")
                 if msg == "total_items":
