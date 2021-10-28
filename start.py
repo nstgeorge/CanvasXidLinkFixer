@@ -64,8 +64,8 @@ def run_fix():
     service = Service(ChromeDriverManager().install())
     browser = webdriver.Chrome(service=service, options=options)
     progress_container = btn_container.container()
-    progress = progress_container.empty()
     status = progress_container.empty()
+    progress = progress_container.empty()
     course_status = progress_container.empty()
 
     total_failed = 0
@@ -79,7 +79,7 @@ def run_fix():
             for msg, arg in xid_fix.do_course(course, st.session_state.username,
                                                               st.session_state.password, revalidate_links):
                 if total_items != 0:
-                    progress.progress(total_attempted / total_items)
+                    progress.progress(max(total_attempted / total_items, 1.0))
                 else:
                     progress.progress(0)
 
@@ -97,16 +97,16 @@ def run_fix():
                 if msg == "item_failed":
                     total_failed += 1
                     total_attempted += 1
-                    course_status.caption("Last item failed to fix: {}".format(get_item_fail_message(arg)))
+                    course_status.caption("Previous item failed to fix: {}".format(get_item_fail_message(arg)))
                 if msg == "item_success":
-                    course_status.caption("Last item succeeded")
+                    course_status.caption("Previous item succeeded")
                     total_attempted += 1
                 if msg == "done":
                     course_status.caption("Course complete!")
 
-                status.caption("Course {} ({}/{}): {} of {} failed so far, {} total items".format(
+                status.markdown("**Course {} ({}/{}):** **{}** of **{}** failed so far, **{}** total items".format(
                     course,
-                    i,
+                    i + 1,
                     len(st.session_state.courses),
                     total_failed,
                     total_attempted,

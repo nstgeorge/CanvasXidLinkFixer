@@ -411,6 +411,7 @@ class XIDFixer:
                 fixed_banks.append(url)
             except Exception:
                 yield "item_failed", "already_fixed"
+                continue
             # driver.execute_script("window.open('{}', '_blank')".format(url))
 
             try:
