@@ -87,8 +87,8 @@ def run_fix():
 
                 # Handle errors
                 if msg[:3] == "err":
-                    err = msg
-
+                    err = msg[4:]
+                # Handle other message types
                 if msg == "waiting_for_duo":
                     course_status.caption("You should have received a Duo push. Please approve the login request. "
                                           "Note: The location shown on the push will not be your real location.")
@@ -124,6 +124,8 @@ def run_fix():
                 elif err == "timeout_fail":
                     alert.error("The course link validation has taken too long. "
                                 "It is still running, so try rerunning the course.")
+                elif err == "course_dne":
+                    alert.error("The course {} does not exist, skipping.".format(course))
                 else:
                     alert.error("An unknown error occurred. Code: {}. Stopping.".format(err))
                 break

@@ -378,6 +378,9 @@ class XIDFixer:
         if not login_result:
             return error, None
 
+        if "Page Not Found" in self.__driver.title:
+            return "err_course_dne", None
+
         yield "waiting_for_duo", None
         self.__go_to_course_link_validator()
         yield "duo_success", None
