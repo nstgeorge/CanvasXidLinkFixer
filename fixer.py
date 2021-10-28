@@ -372,11 +372,11 @@ class XIDFixer:
         returns a tuple: `failed_items, attempted_items, err`
         If an error occurs, `err` will have a very brief description that the UI can expand on.
         """
-        login_result = self.__log_in(course, username, password)
+        login_result, error = self.__log_in(course, username, password)
 
         # Check for failed login case, return fail reason
-        if not login_result[0]:
-            return login_result[1]
+        if not login_result:
+            return error
 
         yield "waiting_for_duo"
         self.__go_to_course_link_validator()
