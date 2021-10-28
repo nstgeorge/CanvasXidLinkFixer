@@ -68,6 +68,8 @@ def run_fix():
     progress = progress_container.empty()
     course_status = progress_container.empty()
 
+    err = None
+
     total_failed = 0
     total_attempted = 0
     total_items = 0
