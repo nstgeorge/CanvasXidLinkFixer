@@ -319,6 +319,9 @@ class XIDFixer:
         self.__driver.find_element(By.CSS_SELECTOR, "button[class*=submit]").click()
 
     def __log_in(self, course, username, password):
+        """Log into Boise State.
+        Returns a tuple with a boolean indicting whether the login was successful and if it fails, an error code is
+        provided in the second entry."""
         self.__driver.get(get_course_link(course) if course.isnumeric() else course)
 
         if "Log In" in self.__driver.title:
@@ -340,11 +343,10 @@ class XIDFixer:
             if self.__check_login_fail():
                 return False, "err_login_fail"
 
-            return True
+            return False,
 
     def __get_xid_items(self, revalidate_links):
         """Get the XID items listed for the course currently in the driver."""
-        self.__go_to_course_link_validator()
 
         # Find results
         results = self.__driver.find_elements(By.CLASS_NAME, "result")
@@ -376,7 +378,10 @@ class XIDFixer:
         if not login_result[0]:
             return login_result[1]
 
+        yield "waiting_for_duo"
         self.__go_to_course_link_validator()
+        yield "duo_success"
+
         xid_items = self.__get_xid_items(revalidate_links)
 
         if xid_items == "timeout_fail":

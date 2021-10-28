@@ -80,8 +80,17 @@ def run_fix():
                                                               st.session_state.password, revalidate_links):
                 if total_items != 0:
                     progress.progress(total_attempted / total_items)
+                else:
+                    progress.progress(0)
+
+                # Handle errors
                 if msg.slice("_")[0] == "err":
                     err = msg
+
+                if msg == "waiting_for_duo":
+                    course_status.caption("You should have received a Duo push. Please approve the login request.")
+                if msg == "duo_success":
+                    course_status.caption("Duo approved, beginning course fix...")
                 if msg == "total_items":
                     total_items = arg
                 if msg == "item_failed":
@@ -130,8 +139,6 @@ def run_fix():
 if __name__ == "__main__":
 
     alert = st.empty()
-
-    # TODO: Add state for when the program is waiting for the user to confirm 2FA
 
     if "username" not in st.session_state or "password" not in st.session_state:
         # Show login screen
