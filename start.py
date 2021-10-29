@@ -43,6 +43,14 @@ def draw_sidebar():
             st.experimental_rerun()
 
 
+def get_item_fail_message(fail_type):
+    """Returns a detailed fail message for a given fail type."""
+    if fail_type == "already_fixed":
+        return "Item has already been fixed because it's from the same pool as a previous question."
+    else:
+        return "Unknown reason."
+
+
 def run_fix():
     start_time = time.time()
     options = Options()
@@ -56,19 +64,58 @@ def run_fix():
     service = Service(ChromeDriverManager().install())
     browser = webdriver.Chrome(service=service, options=options)
     progress_container = btn_container.container()
-    progress = progress_container.empty()
     status = progress_container.empty()
+    progress = progress_container.empty()
+    course_status = progress_container.empty()
+
+    err = None
 
     total_failed = 0
     total_attempted = 0
+    total_items = 0
 
     with contextlib.closing(browser) as driver:
         xid_fix = XIDFixer(driver)
         for i, course in enumerate(st.session_state.courses):
-            progress.progress(int(i * (100 / len(st.session_state.courses))))
-            status.caption("Working on {}...".format(course))
-            failed_items, attempted_items, err = xid_fix.do_course(course, st.session_state.username,
-                                                              st.session_state.password, revalidate_links)
+            status.caption("Starting work on {}...".format(course))
+            for msg, arg in xid_fix.do_course(course, st.session_state.username,
+                                                              st.session_state.password, revalidate_links):
+                if total_items != 0:
+                    progress.progress(max(total_attempted / total_items, 1.0))
+                else:
+                    progress.progress(0)
+
+                # Handle errors
+                print(msg[:3])
+                if msg[:3] == "err":
+                    err = msg[4:]
+                    print(err)
+                # Handle other message types
+                if msg == "waiting_for_duo":
+                    course_status.caption("You should have received a Duo push. Please approve the login request. "
+                                          "Note: The location shown on the push will not be your real location.")
+                if msg == "duo_success":
+                    course_status.caption("Duo approved, beginning course fix...")
+                if msg == "total_items":
+                    total_items = arg
+                if msg == "item_failed":
+                    total_failed += 1
+                    total_attempted += 1
+                    course_status.caption("Previous item failed to fix: {}".format(get_item_fail_message(arg)))
+                if msg == "item_success":
+                    course_status.caption("Previous item succeeded")
+                    total_attempted += 1
+                if msg == "done":
+                    course_status.caption("Course complete!")
+
+                status.markdown("**Course {} ({}/{}):** **{}** of **{}** failed so far, **{}** total items".format(
+                    course,
+                    i + 1,
+                    len(st.session_state.courses),
+                    total_failed,
+                    total_attempted,
+                    total_items
+                ))
 
             if err is not None:
                 if err == "login_fail":
@@ -76,12 +123,20 @@ def run_fix():
                                 "and re-enter your information.")
                 elif err == "login_not_interactable":
                     alert.error("Unable to interact with login page. This is usually fixed with a rerun.")
+                elif err == "duo_fail":
+                    alert.error("The Duo request has timed out. "
+                                "If you didn't receive a push notification, make sure your Duo account is set up "
+                                "to automatically send push notifications instead of asking for an authentication "
+                                "method.")
+                elif err == "timeout_fail":
+                    alert.error("The course link validation has taken too long. "
+                                "It is still running, so try rerunning the course.")
+                elif err == "course_dne":
+                    alert.error("The course {} does not exist, skipping.".format(course))
                 else:
                     alert.error("An unknown error occurred. Code: {}. Stopping.".format(err))
                 break
-            else:
-                total_failed += failed_items
-                total_attempted += attempted_items
+
     if not err:
         progress.progress(100)
         status.caption("Done!")
@@ -98,8 +153,6 @@ def run_fix():
 if __name__ == "__main__":
 
     alert = st.empty()
-
-    # TODO: Add state for when the program is waiting for the user to confirm 2FA
 
     if "username" not in st.session_state or "password" not in st.session_state:
         # Show login screen
@@ -140,7 +193,7 @@ if __name__ == "__main__":
                     "Then, when you're ready, press the **Start** button below. "
                     "Alternatively, you can clear the course list in the sidebar and try again.")
 
-        st.markdown("You will likely be asked to complete Duo authentication on your device."
+        st.markdown("You will likely be asked to complete Duo authentication on your device. "
                     "**Please ensure that your Duo is set to [automatically send push requests.]"
                     "(https://www.boisestate.edu/oit-myboisestate/customize-your-duo-security-preferences/)**")
 
