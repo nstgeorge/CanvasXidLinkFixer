@@ -88,6 +88,7 @@ def run_fix():
                 # Handle errors
                 if msg[:3] == "err":
                     err = msg[4:]
+                    print(err)
                 # Handle other message types
                 if msg == "waiting_for_duo":
                     course_status.caption("You should have received a Duo push. Please approve the login request. "
