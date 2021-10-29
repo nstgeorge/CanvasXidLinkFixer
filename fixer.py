@@ -383,10 +383,15 @@ class XIDFixer:
 
         # Check for failed login case, return fail reason
         if not login_result:
-            return error, None
+            yield error, None
+            return
 
         if "Page Not Found" in self.__driver.title:
-            return "err_course_dne", None
+            print("Page does not exist")
+            yield "err_course_dne", None
+            return
+
+        print("Page exists")
 
         yield "waiting_for_duo", None
 
@@ -398,7 +403,8 @@ class XIDFixer:
         xid_items = self.__get_xid_items(revalidate_links)
 
         if xid_items == "timeout_fail":
-            return "err_timeout_fail", None
+            yield "err_timeout_fail", None
+            return
 
         yield "total_items", len(xid_items)
 
