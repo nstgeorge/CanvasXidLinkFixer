@@ -145,10 +145,15 @@ class XIDFixer:
 
     def __go_to_course_link_validator(self):
         """Navigate to course link validation page"""
-        settings_link = ui.WebDriverWait(self.__driver, LOGIN_TIMEOUT) \
-            .until(lambda d: d.find_element(By.LINK_TEXT, "Settings"))
-        settings_link.click()
+        try:
+            settings_link = ui.WebDriverWait(self.__driver, LOGIN_TIMEOUT) \
+                .until(lambda d: d.find_element(By.LINK_TEXT, "Settings"))
+            settings_link.click()
+        except TimeoutException:
+            return False
+
         self.__driver.find_element(By.PARTIAL_LINK_TEXT, "Validate Links in Content").click()
+        return True
 
     def __open_in_new_tab(self, link):
         """Opens the given link in a new tab."""
@@ -384,8 +389,10 @@ class XIDFixer:
             return "err_course_dne", None
 
         yield "waiting_for_duo", None
-        self.__go_to_course_link_validator()
-        yield "duo_success", None
+        if self.__go_to_course_link_validator():
+            yield "duo_success", None
+        else:
+            return "err_duo_fail", None
 
         xid_items = self.__get_xid_items(revalidate_links)
 

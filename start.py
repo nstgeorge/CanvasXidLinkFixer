@@ -121,6 +121,11 @@ def run_fix():
                                 "and re-enter your information.")
                 elif err == "login_not_interactable":
                     alert.error("Unable to interact with login page. This is usually fixed with a rerun.")
+                elif err == "duo_fail":
+                    alert.error("The Duo request has timed out. "
+                                "If you didn't receive a push notification, make sure your Duo account is set up "
+                                "to automatically send push notifications instead of asking for an authentication "
+                                "method.")
                 elif err == "timeout_fail":
                     alert.error("The course link validation has taken too long. "
                                 "It is still running, so try rerunning the course.")
