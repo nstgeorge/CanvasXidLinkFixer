@@ -398,7 +398,8 @@ class XIDFixer:
         if self.__go_to_course_link_validator():
             yield "duo_success", None
         else:
-            return "err_duo_fail", None
+            yield "err_duo_fail", None
+            return
 
         xid_items = self.__get_xid_items(revalidate_links)
 
@@ -477,4 +478,5 @@ class XIDFixer:
                 failed_items += 1
                 yield "item_failed", "unknown"
 
-        return "done", None
+        yield "done", None
+        return
