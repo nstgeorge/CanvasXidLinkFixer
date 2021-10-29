@@ -389,6 +389,7 @@ class XIDFixer:
             return "err_course_dne", None
 
         yield "waiting_for_duo", None
+
         if self.__go_to_course_link_validator():
             yield "duo_success", None
         else:

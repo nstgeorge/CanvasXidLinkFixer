@@ -1,3 +1,4 @@
+export PYTHONUNBUFFERED=1
 mkdir -p ~/.streamlit/
 echo "\
 [server]\n\
