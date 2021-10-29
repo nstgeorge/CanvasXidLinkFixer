@@ -412,10 +412,11 @@ class XIDFixer:
                 if url in fixed_banks:
                     print("This question has already been fixed "
                           "because it belongs to the same bank as a previous question.")
+                    yield "item_failed", "already_fixed"
                     continue
                 fixed_banks.append(url)
-            except Exception:
-                yield "item_failed", "already_fixed"
+            except Exception as e:
+                print(e)
                 continue
             # driver.execute_script("window.open('{}', '_blank')".format(url))
 
