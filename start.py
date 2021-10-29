@@ -86,6 +86,7 @@ def run_fix():
                     progress.progress(0)
 
                 # Handle errors
+                print(msg[:3])
                 if msg[:3] == "err":
                     err = msg[4:]
                     print(err)
