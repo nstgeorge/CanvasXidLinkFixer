@@ -2,6 +2,7 @@ import contextlib
 import time
 import datetime
 import os
+import sys
 
 from selenium import webdriver
 import streamlit as st
@@ -87,6 +88,7 @@ def run_fix():
 
                 # Handle errors
                 print(msg[:3])
+                sys.stdout.flush()
                 if msg[:3] == "err":
                     err = msg[4:]
                     print(err)
