@@ -1,4 +1,7 @@
 # Canvas XID Link Fixer
+
+[Go here for the web UI](https://canvas-xid.herokuapp.com). It may take a moment to spin up the system if it hasn't been used in a while.
+
 An automated utility for fixing broken Canvas image links prefixed with "xid" from Blackboard course imports. Developed for Boise State University.
 
 If you are from Boise State, you will find additional information in [this Google Doc](https://docs.google.com/document/d/1xQ3Ykuhz6SRn2EJ4Oxc5uE-tUCW3pGLF9gBGpLeTzQg/edit?usp=sharing).
